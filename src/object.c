@@ -285,6 +285,27 @@ robj *createModuleObject(moduleType *mt, void *value) {
     return createObject(OBJ_MODULE,mv);
 }
 
+
+robj *createCustomTypeObject(long long id ,const char *name){
+    customTypeObject *nt = zmalloc(sizeof(*nt));
+    nt->id = id;
+    nt->name = sdsnew(name);
+    robj *o = createObject(OBJ_CUSTOM,nt);
+    o->encoding = OBJ_ENCODING_RAW;
+    return o;
+
+}
+
+void freeCustomTypeObject(robj *o){
+    customTypeObject *nt = o->ptr;
+    if (nt-> name)
+    {
+        sdsfree(nt->name);
+    }
+    zfree(nt);
+}
+
+
 void freeStringObject(robj *o) {
     if (o->encoding == OBJ_ENCODING_RAW) {
         sdsfree(o->ptr);
@@ -346,6 +367,8 @@ void freeStreamObject(robj *o) {
     freeStream(o->ptr);
 }
 
+
+
 void incrRefCount(robj *o) {
     if (o->refcount < OBJ_FIRST_SPECIAL_REFCOUNT) {
         o->refcount++;
@@ -368,6 +391,7 @@ void decrRefCount(robj *o) {
         case OBJ_HASH: freeHashObject(o); break;
         case OBJ_MODULE: freeModuleObject(o); break;
         case OBJ_STREAM: freeStreamObject(o); break;
+        case OBJ_CUSTOM: freeCustomTypeObject(o);break;
         default: serverPanic("Unknown object type"); break;
         }
         zfree(o);
@@ -1142,6 +1166,10 @@ size_t objectComputeSize(robj *key, robj *o, size_t sample_size, int dbid) {
         }
     } else if (o->type == OBJ_MODULE) {
         asize = moduleGetMemUsage(key, o, sample_size, dbid);
+    } else if (o->type == OBJ_CUSTOM) {
+        customTypeObject *nt = o->ptr;
+        asize += sizeof(customTypeObject);
+        asize += sdsZmallocSize(nt->name);
     } else {
         serverPanic("Unknown object type");
     }

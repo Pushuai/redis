@@ -714,6 +714,8 @@ int rdbSaveObjectType(rio *rdb, robj *o) {
         return rdbSaveType(rdb,RDB_TYPE_STREAM_LISTPACKS_3);
     case OBJ_MODULE:
         return rdbSaveType(rdb,RDB_TYPE_MODULE_2);
+    case OBJ_CUSTOM:
+        return rdbSaveType(rdb,RDB_TYPE_CUSTOM);    
     default:
         serverPanic("Unknown object type");
     }
@@ -3151,7 +3153,21 @@ robj *rdbLoadObject(int rdbtype, rio *rdb, sds key, int dbid, int *error)
             return NULL;
         }
         o = createModuleObject(mt, ptr);
-    } else {
+    }
+    else if(rdbtype == RDB_TYPE_CUSTOM){
+        long long id;
+        if(rdbLoadLen(rdb,(int*)&id) == RDB_LENERR){
+            return NULL;
+        }
+        size_t len;
+        sds name = rdbGenericLoadStringObject(rdb,RDB_LOAD_SDS,&len);
+        if(!name){
+            return NULL;
+        }
+        return createCustomTypeObject(id,name);
+
+    }
+     else {
         rdbReportReadError("Unknown RDB encoding type %d",rdbtype);
         return NULL;
     }

@@ -24,7 +24,8 @@ const char *COMMAND_GROUP_STR[] = {
     "geo",
     "stream",
     "bitmap",
-    "module"
+    "module",
+    "nt"
 };
 
 const char *commandGroupStr(int index) {
@@ -3445,6 +3446,42 @@ struct COMMAND_ARG HGET_Args[] = {
 };
 
 /********** HGETALL ********************/
+
+
+/********** nt.set ********************/
+
+#ifndef SKIP_CMD_KEY_SPECS_TABLE
+/* nt.set key specs */
+keySpec NTSET_Keyspecs[1] = {
+{NULL,CMD_KEY_RW|CMD_KEY_ACCESS,KSPEC_BS_INDEX,.bs.index={1},KSPEC_FK_RANGE,.fk.range={0,1,0}}
+};
+#endif
+
+/* ntset argument table */
+struct COMMAND_ARG NTSET_Args[] = {
+{MAKE_ARG("key",ARG_TYPE_KEY,0,NULL,NULL,NULL,CMD_ARG_NONE,0,NULL)},
+{MAKE_ARG("id",ARG_TYPE_INTEGER,-1,NULL,NULL,NULL,CMD_ARG_NONE,0,NULL)},
+{MAKE_ARG("name",ARG_TYPE_STRING,-1,NULL,NULL,NULL,CMD_ARG_NONE,0,NULL)},
+};
+
+/**********  nt.set ********************/
+
+
+/********** nt.get ********************/
+
+#ifndef SKIP_CMD_KEY_SPECS_TABLE
+/* nt.get key specs */
+keySpec NTGET_Keyspecs[1] = {
+{NULL,CMD_KEY_RO|CMD_KEY_ACCESS,KSPEC_BS_INDEX,.bs.index={1},KSPEC_FK_RANGE,.fk.range={0,1,0}}
+};
+#endif
+
+/* nt.get argument table */
+struct COMMAND_ARG NTGET_Args[] = {
+{MAKE_ARG("key",ARG_TYPE_KEY,0,NULL,NULL,NULL,CMD_ARG_NONE,0,NULL)},
+};
+
+/**********  nt.get ********************/
 
 #ifndef SKIP_CMD_HISTORY_TABLE
 /* HGETALL history */
@@ -11367,5 +11404,8 @@ struct COMMAND_STRUCT redisCommandTable[] = {
 {MAKE_CMD("multi","Starts a transaction.","O(1)","1.2.0",CMD_DOC_NONE,NULL,NULL,"transactions",COMMAND_GROUP_TRANSACTIONS,MULTI_History,0,MULTI_Tips,0,multiCommand,1,CMD_NOSCRIPT|CMD_LOADING|CMD_STALE|CMD_FAST|CMD_ALLOW_BUSY,ACL_CATEGORY_TRANSACTION,MULTI_Keyspecs,0,NULL,0)},
 {MAKE_CMD("unwatch","Forgets about watched keys of a transaction.","O(1)","2.2.0",CMD_DOC_NONE,NULL,NULL,"transactions",COMMAND_GROUP_TRANSACTIONS,UNWATCH_History,0,UNWATCH_Tips,0,unwatchCommand,1,CMD_NOSCRIPT|CMD_LOADING|CMD_STALE|CMD_FAST|CMD_ALLOW_BUSY,ACL_CATEGORY_TRANSACTION,UNWATCH_Keyspecs,0,NULL,0)},
 {MAKE_CMD("watch","Monitors changes to keys to determine the execution of a transaction.","O(1) for every key.","2.2.0",CMD_DOC_NONE,NULL,NULL,"transactions",COMMAND_GROUP_TRANSACTIONS,WATCH_History,0,WATCH_Tips,0,watchCommand,-2,CMD_NOSCRIPT|CMD_LOADING|CMD_STALE|CMD_FAST|CMD_ALLOW_BUSY,ACL_CATEGORY_TRANSACTION,WATCH_Keyspecs,1,NULL,1),.args=WATCH_Args},
+//custom type
+{MAKE_CMD("nt.set","nt.set","O(1)","2.0.0",CMD_DOC_NONE,NULL,NULL,"nt",COMMAND_GROUP_NT,NULL,0,NULL,0,customTypeSetCommand,0,CMD_WRITE,ACL_CATEGORY_NT,NTSET_Keyspecs,1,NULL,3),.args=NTSET_Args},
+{MAKE_CMD("nt.get","nt.get","O(1)","2.0.0",CMD_DOC_NONE,NULL,NULL,"nt",COMMAND_GROUP_NT,NULL,0,NULL,0,customTypeGetCommand,0,CMD_READONLY,ACL_CATEGORY_NT,NTGET_Keyspecs,1,NULL,1),.args=NTGET_Args},
 {0}
 };

@@ -7245,7 +7245,7 @@ int main(int argc, char **argv) {
         initSentinelConfig();
         initSentinel();
     }
-
+    printf("Hello world!\n");
     /* Check if we need to start in redis-check-rdb/aof mode. We just execute
      * the program main. However the program is part of the Redis executable
      * so that we can easily execute an RDB check on loading errors. */

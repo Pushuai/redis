@@ -249,6 +249,7 @@ extern int configOOMScoreAdjValuesDefaults[CONFIG_OOM_COUNT];
 #define ACL_CATEGORY_CONNECTION (1ULL<<18)
 #define ACL_CATEGORY_TRANSACTION (1ULL<<19)
 #define ACL_CATEGORY_SCRIPTING (1ULL<<20)
+#define ACL_CATEGORY_NT (1ULL<<21)
 
 /* Key-spec flags *
  * -------------- */
@@ -775,7 +776,8 @@ typedef enum {
  * encoding version. */
 #define OBJ_MODULE 5    /* Module object. */
 #define OBJ_STREAM 6    /* Stream object. */
-#define OBJ_TYPE_MAX 7  /* Maximum number of object types */
+#define OBJ_CUSTOM 7 
+#define OBJ_TYPE_MAX 8  /* Maximum number of object types */
 
 /* Extract encver / signature from a module type ID. */
 #define REDISMODULE_TYPE_ENCVER_BITS 10
@@ -1488,6 +1490,12 @@ typedef struct zset {
     dict *dict;
     zskiplist *zsl;
 } zset;
+
+typedef struct customTypeObject {
+    long long id;
+    sds name;
+} customTypeObject;
+
 
 typedef struct clientBufferLimitsConfig {
     unsigned long long hard_limit_bytes;
@@ -2383,6 +2391,7 @@ typedef enum {
     COMMAND_GROUP_STREAM,
     COMMAND_GROUP_BITMAP,
     COMMAND_GROUP_MODULE,
+    COMMAND_GROUP_NT
 } redisCommandGroup;
 
 typedef void redisCommandProc(client *c);
@@ -2642,6 +2651,9 @@ extern EbucketsType hashFieldExpireBucketsType; /* local per hash */
 /*-----------------------------------------------------------------------------
  * Functions prototypes
  *----------------------------------------------------------------------------*/
+
+void customTypeGetCommand(client *c);
+void customTypeSetCommand(client *c);
 
 /* Command metadata */
 void populateCommandLegacyRangeSpec(struct redisCommand *c);
@@ -2965,6 +2977,11 @@ robj *createSetObject(void);
 robj *createIntsetObject(void);
 robj *createSetListpackObject(void);
 robj *createHashObject(void);
+
+robj *createCustomTypeObject(long long id ,const char *name);
+void freeCustomTypeObject(robj *o);
+
+
 robj *createZsetObject(void);
 robj *createZsetListpackObject(void);
 robj *createStreamObject(void);
